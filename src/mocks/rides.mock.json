@@ -1,0 +1,57 @@
+{
+    "list": {
+      "status": "success",
+      "data": [
+        {
+          "id": 10,
+          "kickboard_id": "KB-001",
+          "started_at": "2026-06-24T09:00:00",
+          "ended_at": "2026-06-24T09:30:00",
+          "warning_count": 0
+        }
+      ]
+    },
+    "recent": {
+      "status": "success",
+      "data": [
+        {
+          "ride_id": 12,
+          "kickboard_id": "KB-001",
+          "started_at": "2026-06-24T09:00:00",
+          "ended_at": "2026-06-24T09:30:00",
+          "warning_count": 1
+        },
+        {
+          "ride_id": 11,
+          "kickboard_id": "KB-003",
+          "started_at": "2026-06-22T18:10:00",
+          "ended_at": "2026-06-22T18:35:00",
+          "warning_count": 0
+        }
+      ]
+    },
+    "detail": {
+      "status": "success",
+      "data": {
+        "ride_id": 12,
+        "kickboard_id": "KB-001",
+        "started_at": "2026-06-24T09:00:00",
+        "ended_at": "2026-06-24T09:30:00",
+        "warning_count": 1
+      }
+    },
+    "start": {
+      "status": "success",
+      "data": {
+        "ride_id": 10
+      }
+    },
+    "end": {
+      "status": "success",
+      "data": {
+        "ride_id": 10,
+        "ended_at": "2026-06-24T09:30:00",
+        "warning_count": 1
+      }
+    }
+  }

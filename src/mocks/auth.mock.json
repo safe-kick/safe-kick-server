@@ -1,0 +1,29 @@
+{
+    "register": {
+      "status": "success",
+      "data": {
+        "user_id": 1,
+        "token": "mock.jwt.token"
+      },
+      "message": "회원가입이 완료되었습니다."
+    },
+    "login": {
+      "status": "success",
+      "data": {
+        "token": "mock.jwt.token",
+        "user": {
+          "id": 1,
+          "name": "초세연",
+          "email": "user@example.com"
+        }
+      }
+    },
+    "faceVerifySuccess": {
+      "status": "success",
+      "data": {
+        "match": true,
+        "confidence": 0.92,
+        "face_vector": [0.123, -0.456, 0.789]
+      }
+    }
+  }

@@ -1,0 +1,15 @@
+{
+    "me": {
+      "status": "success",
+      "data": {
+        "id": 1,
+        "name": "최세연",
+        "email": "user@example.com",
+        "license": {
+          "license_no": "12-34-567890-01",
+          "expires_at": "2030-12-31"
+        },
+        "created_at": "2026-06-24T09:00:00"
+      }
+    }
+  }

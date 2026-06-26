@@ -1,0 +1,55 @@
+{
+    "status": {
+      "status": "success",
+      "data": {
+        "kickboard_id": "KB-001",
+        "is_locked": true,
+        "session_active": false
+      }
+    },
+    "start": {
+      "status": "success",
+      "data": {
+        "session_id": 5,
+        "message": "모니터링을 시작합니다."
+      }
+    },
+    "end": {
+      "status": "success",
+      "data": {
+        "session_id": 5,
+        "started_at": "2026-06-24T09:00:00",
+        "ended_at": "2026-06-24T09:30:00",
+        "warning_count": 0
+      }
+    },
+    "summary": {
+      "status": "success",
+      "data": {
+        "session_id": 5,
+        "kickboard_id": "KB-001",
+        "started_at": "2026-06-24T09:00:00",
+        "ended_at": "2026-06-24T09:30:00",
+        "duration_sec": 1800,
+        "warning_count": 1,
+        "warning_reasons": ["two_person"]
+      }
+    },
+    "lock": {
+      "status": "success",
+      "data": {
+        "session_id": 5,
+        "is_locked": true,
+        "reason": "two_person"
+      },
+      "message": "킥보드가 잠금되었습니다."
+    },
+    "unlock": {
+      "status": "success",
+      "data": {
+        "session_id": 5,
+        "is_locked": false
+      },
+      "message": "킥보드 잠금이 해제되었습니다."
+    }
+  }
