@@ -1,11 +1,13 @@
 const express = require("express");
 const cors = require("cors");
+const pool = require("./config/db");
 
 const authRoutes = require("./routes/auth");
 const usersRoutes = require("./routes/users");
 const ridesRoutes = require("./routes/rides");
 const sessionRoutes = require("./routes/session");
 const kickboardRoutes = require("./routes/kickboard");
+
 
 const app = express();
 
@@ -21,6 +23,20 @@ app.get("/health", (req, res) => {
     },
     message: "Safe Kick mock server is running"
   });
+});
+
+app.get('/health/db', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({ ok: true, db: 'connected' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      ok: false,
+      db: 'error',
+      message: err.message,
+    });
+  }
 });
 
 app.use("/auth", authRoutes);
