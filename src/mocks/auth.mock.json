@@ -13,7 +13,7 @@
         "token": "mock.jwt.token",
         "user": {
           "id": 1,
-          "name": "초세연",
+          "name": "최세은",
           "email": "user@example.com"
         }
       }

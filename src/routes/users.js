@@ -1,10 +1,9 @@
 const express = require("express");
-const mock = require("../mocks/users.mock.json");
+const usersController = require("../controllers/usersController");
+const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
-router.get("/me", (req, res) => {
-  res.json(mock.me);
-});
+router.get("/me", authMiddleware, usersController.getMe);
 
 module.exports = router;
