@@ -12,7 +12,15 @@ const kickboardRoutes = require("./routes/kickboard");
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+
+// Base64 이미지나 비교적 큰 JSON 요청을 받을 수 있도록 크기 제한 확대
+app.use(express.json({ limit: "10mb" }));
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: "10mb",
+  }),
+);
 
 app.get("/health", (req, res) => {
   res.json({
