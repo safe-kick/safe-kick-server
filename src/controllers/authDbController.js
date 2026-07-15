@@ -12,7 +12,6 @@ exports.register = async (req, res) => {
       password,
       license_no,
       license_expires_at,
-      license_image,
     } = req.body;
 
     if (
@@ -20,8 +19,7 @@ exports.register = async (req, res) => {
       !email ||
       !password ||
       !license_no ||
-      !license_expires_at ||
-      !license_image
+      !license_expires_at 
     ) {
       return res.status(400).json({
         status: "error",
@@ -60,10 +58,10 @@ exports.register = async (req, res) => {
 
     await client.query(
       `
-      INSERT INTO licenses (user_id, license_no, expires_at, license_image)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO licenses (user_id, license_no, expires_at)
+      VALUES ($1, $2, $3)
       `,
-      [userId, license_no, license_expires_at, license_image]
+      [userId, license_no, license_expires_at]
     );
 
     await client.query("COMMIT");
