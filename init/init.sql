@@ -17,7 +17,6 @@ CREATE TABLE IF NOT EXISTS licenses (
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     license_no VARCHAR(20) NOT NULL,
     expires_at DATE NOT NULL,
-    license_image TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
