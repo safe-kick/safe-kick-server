@@ -20,6 +20,50 @@ CREATE TABLE IF NOT EXISTS licenses (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+
+-- ===========================
+-- kickboards
+-- ===========================
+CREATE TABLE IF NOT EXISTS kickboards (
+    id BIGSERIAL PRIMARY KEY,
+
+    public_id VARCHAR(50)
+        UNIQUE
+        NOT NULL,
+
+    device_id VARCHAR(50)
+        UNIQUE
+        NOT NULL,
+
+    status VARCHAR(20)
+        NOT NULL
+        DEFAULT 'available',
+
+    created_at TIMESTAMP
+        DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT kickboards_status_check
+        CHECK (
+            status IN (
+                'available',
+                'in_use',
+                'maintenance',
+                'offline'
+            )
+        )
+);
+
+INSERT INTO kickboards (
+    public_id,
+    device_id,
+    status
+)
+VALUES (
+    'KB-7F3A9C2D',
+    'available'
+)
+ON CONFLICT (public_id) DO NOTHING;
+
 -- ===========================
 -- rides
 -- ===========================

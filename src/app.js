@@ -7,6 +7,7 @@ const usersRoutes = require("./routes/users");
 const ridesRoutes = require("./routes/rides");
 const sessionRoutes = require("./routes/session");
 const kickboardRoutes = require("./routes/kickboard");
+const kickboardsRouter = require("./routes/kickboards");
 
 
 const app = express();
@@ -51,6 +52,7 @@ app.use("/auth", authRoutes);
 app.use("/users", usersRoutes);
 app.use("/rides", ridesRoutes);
 app.use("/session", sessionRoutes);
+app.use("/kickboards", kickboardsRouter,);
 
 app.use("/", kickboardRoutes);
 
