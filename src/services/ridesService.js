@@ -20,6 +20,8 @@ const startRide = async ({
   kickboardId,
   startedAt,
 }) => {
+  const allowConcurrentRides =
+    process.env.ALLOW_CONCURRENT_RIDES === "true";
   const client = await pool.connect();
 
   try {
@@ -54,7 +56,10 @@ const startRide = async ({
         [userId],
       );
 
-    if (activeRideResult.rows.length > 0) {
+    if (
+      activeRideResult.rows.length > 0 &&
+      !allowConcurrentRides
+    ) {
       throw createServiceError(
         "ACTIVE_RIDE_EXISTS",
         "이미 진행 중인 운행이 있습니다.",
@@ -92,10 +97,30 @@ const startRide = async ({
     /*
      * 사용 가능한 킥보드인지 확인
      */
-    if (kickboard.status !== "available") {
+    if (
+      kickboard.status !== "available" &&
+      !allowConcurrentRides
+    ) {
       throw createServiceError(
         "KICKBOARD_NOT_AVAILABLE",
         "현재 사용할 수 없는 킥보드입니다.",
+      );
+    }
+
+    if (
+      allowConcurrentRides &&
+      (activeRideResult.rows.length > 0 ||
+        kickboard.status !== "available")
+    ) {
+      console.warn(
+        "[RIDE START][TEST BYPASS] 기존 운행/킥보드 상태 제한을 우회합니다.",
+        {
+          userId,
+          kickboardId,
+          kickboardStatus: kickboard.status,
+          activeRideId:
+            activeRideResult.rows[0]?.id ?? null,
+        },
       );
     }
 

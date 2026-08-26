@@ -60,6 +60,7 @@ INSERT INTO kickboards (
 )
 VALUES (
     'KB-7F3A9C2D',
+    'RPI-001',
     'available'
 )
 ON CONFLICT (public_id) DO NOTHING;
