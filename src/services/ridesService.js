@@ -339,10 +339,8 @@ const endRide = async ({
      * 이미 종료된 운행인지 확인
      */
     if (ride.ended_at !== null) {
-      throw createServiceError(
-        "RIDE_ALREADY_ENDED",
-        "이미 종료된 운행입니다.",
-      );
+      await client.query("ROLLBACK");
+      return ride;
     }
 
     /*
