@@ -24,13 +24,15 @@ app.use(
 );
 
 app.get("/health", (req, res) => {
+  const mode = process.env.USE_MOCK === "true" ? "mock" : "database";
+
   res.json({
     status: "success",
     data: {
       server: "safe-kick-server",
-      mode: "mock"
+      mode,
     },
-    message: "Safe Kick mock server is running"
+    message: `Safe Kick ${mode} server is running`,
   });
 });
 
