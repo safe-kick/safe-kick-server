@@ -5,6 +5,7 @@
         "id": 1,
         "name": "최세은",
         "email": "user@example.com",
+        "phone": "010-1234-5678",
         "license": {
           "license_no": "12-34-567890-01",
           "expires_at": "2030-12-31"

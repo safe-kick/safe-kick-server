@@ -7,6 +7,7 @@ const getMe = async (userId) => {
       u.id,
       u.name,
       u.email,
+      u.phone,
       u.created_at,
       l.license_no,
       l.expires_at

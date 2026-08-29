@@ -20,6 +20,7 @@ exports.getMe = async (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         license: {
           license_no: user.license_no,
           expires_at: user.expires_at,

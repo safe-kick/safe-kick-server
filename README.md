@@ -207,6 +207,7 @@ CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
+    phone VARCHAR(20),
     password_hash VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -351,6 +352,7 @@ Content-Type: application/json
 {
   "name": "홍길동",
   "email": "user@example.com",
+  "phone": "010-1234-5678",
   "password": "password1234",
   "license_no": "12-34-567890-12",
   "license_expires_at": "2030-01-01"

@@ -9,6 +9,7 @@ exports.register = async (req, res) => {
     const {
       name,
       email,
+      phone,
       password,
       license_no,
       license_expires_at,
@@ -17,6 +18,7 @@ exports.register = async (req, res) => {
     if (
       !name ||
       !email ||
+      !phone ||
       !password ||
       !license_no ||
       !license_expires_at 
@@ -47,11 +49,11 @@ exports.register = async (req, res) => {
 
     const userResult = await client.query(
       `
-      INSERT INTO users (name, email, password_hash)
-      VALUES ($1, $2, $3)
+      INSERT INTO users (name, email, phone, password_hash)
+      VALUES ($1, $2, $3, $4)
       RETURNING id
       `,
-      [name, email, passwordHash]
+      [name, email, phone, passwordHash]
     );
 
     const userId = userResult.rows[0].id;
@@ -102,7 +104,7 @@ exports.login = async (req, res) => {
 
     const result = await pool.query(
       `
-      SELECT id, name, email, password_hash
+      SELECT id, name, email, phone, password_hash
       FROM users
       WHERE email = $1
       `,
@@ -148,6 +150,7 @@ exports.login = async (req, res) => {
           id: user.id,
           name: user.name,
           email: user.email,
+          phone: user.phone,
         },
       },
       message: "로그인에 성공했습니다.",
