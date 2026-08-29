@@ -11,7 +11,11 @@ Express와 PostgreSQL을 사용하며 다음 기능을 담당합니다.
 - 운행 시작·종료
 - 진행 중인 운행 조회
 - 최근 운행 및 운행 상세 조회
-- Raspberry Pi 세션·잠금 API 연동
+- 앱이 Raspberry Pi 안전 세션과 함께 사용할 운행 메타데이터 관리
+
+실제 센서 검사와 잠금 제어는 앱이 `safe-kick-raspi` API를 직접 호출해 수행합니다.
+이 저장소의 `/session/*`, `/status`, `/lock`, `/unlock`은 기존 클라이언트 호환용
+고정 Mock 응답이며 실제 Raspberry Pi나 STM32를 제어하지 않습니다.
 
 ---
 
@@ -43,13 +47,16 @@ safe-kick-server/
 │   │   ├── rides.js
 │   │   ├── session.js
 │   │   ├── kickboard.js
-│   │   └── kickboards.js
+│   │   ├── kickboards.js
+│   │   └── users.js
 │   │
 │   ├── controllers/
 │   │   ├── authController.js
 │   │   ├── authDbController.js
 │   │   ├── authMockController.js
 │   │   ├── usersController.js
+│   │   ├── usersDbController.js
+│   │   ├── usersMockController.js
 │   │   ├── ridesController.js
 │   │   ├── ridesDbController.js
 │   │   ├── ridesMockController.js
@@ -57,7 +64,8 @@ safe-kick-server/
 │   │
 │   ├── services/
 │   │   ├── ridesService.js
-│   │   └── kickboardsService.js
+│   │   ├── kickboardsService.js
+│   │   └── usersService.js
 │   │
 │   ├── middlewares/
 │   │   └── authMiddleware.js
@@ -65,7 +73,7 @@ safe-kick-server/
 │   └── config/
 │       └── db.js
 │
-├── docker-entrypoint-initdb.d/
+├── init/
 │   └── init.sql
 │
 ├── Dockerfile
@@ -75,8 +83,6 @@ safe-kick-server/
 ├── package.json
 └── README.md
 ```
-
-실제 프로젝트 구조에 따라 일부 컨트롤러 파일명은 다를 수 있습니다.
 
 ---
 
@@ -97,19 +103,24 @@ DB_HOST=db
 DB_PORT=5432
 DB_NAME=cutdb
 DB_USER=user
-DB_PASSWORD=change_me
+DB_PASSWORD=1234
 
-USE_MOCK=false
+ALLOW_CONCURRENT_RIDES=false
 
-JWT_SECRET=change_this_secret
+JWT_SECRET=safe-kick-dev-secret
 ```
 
 주의사항:
 
 - `.env`는 GitHub에 올리지 않습니다.
 - `.env.example`에는 실제 비밀번호나 운영용 JWT Secret을 넣지 않습니다.
-- `USE_MOCK=false`이면 PostgreSQL 기반 DB 컨트롤러를 사용합니다.
-- `USE_MOCK=true`이면 Mock 컨트롤러를 사용합니다.
+- `USE_MOCK`은 선택값이며 미설정 또는 `false`이면 PostgreSQL 컨트롤러,
+  `true`이면 사용자·인증·운행 Mock 컨트롤러를 사용합니다.
+- `ALLOW_CONCURRENT_RIDES=false`이면 한 사용자의 중복 운행과 사용 중인 킥보드의
+  재대여를 차단합니다.
+- 현재 `docker-compose.yml`은 통합 테스트를 위해
+  `ALLOW_CONCURRENT_RIDES=true`를 강제로 덮어씁니다. 운영 또는 최종 시연 환경에서는
+  이 override를 제거하거나 `false`로 바꿔야 정상적인 중복 운행 방지가 적용됩니다.
 
 ---
 
@@ -203,8 +214,11 @@ QR로 식별되는 킥보드 정보를 저장합니다.
 CREATE TABLE IF NOT EXISTS kickboards (
     id BIGSERIAL PRIMARY KEY,
     public_id VARCHAR(50) UNIQUE NOT NULL,
+    device_id VARCHAR(50) UNIQUE NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'available',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT kickboards_status_check
+        CHECK (status IN ('available', 'in_use', 'maintenance', 'offline'))
 );
 ```
 
@@ -213,10 +227,12 @@ CREATE TABLE IF NOT EXISTS kickboards (
 ```sql
 INSERT INTO kickboards (
     public_id,
+    device_id,
     status
 )
 VALUES (
     'KB-7F3A9C2D',
+    'RPI-001',
     'available'
 )
 ON CONFLICT (public_id) DO NOTHING;
@@ -230,6 +246,12 @@ available
 
 in_use
 → 운행 중
+
+maintenance
+→ 점검 중
+
+offline
+→ 연결 불가
 ```
 
 ## rides
@@ -293,6 +315,10 @@ mock.jwt.token
 ---
 
 # 📡 API
+
+`/auth`, `/users`, `/rides`, `/kickboards`는 실제 서비스 API입니다. 반면
+`/session/*`, `/status`, `/lock`, `/unlock`은 인증·DB·하드웨어 제어 없이 고정된
+Mock 데이터를 반환하는 호환 경로입니다.
 
 ## 1. 회원가입
 
@@ -543,19 +569,22 @@ QR은 킥보드를 식별하는 역할만 하며, 실제 대여 가능 여부와
 → QR 스캔
 → GET /kickboards/:publicId
 → 킥보드 존재 및 상태 확인
-→ 얼굴 인증
-→ 음주 및 2인 탑승 안전 검사
-→ POST /rides/start
+→ Raspberry Pi POST /session/start
+→ 실시간 얼굴·헬멧 인증
+→ MQ-3 baseline·음주·호흡 검사
+→ 1인 탑승 무게 검사
+→ Raspberry Pi가 STM32 잠금 해제 및 모니터링 시작
+→ Node.js POST /rides/start
 → kickboards.status = in_use
-→ Raspberry Pi 세션 시작
-→ 잠금 해제
 → 운행
-→ 잠금
 → Raspberry Pi 세션 종료
-→ 얼굴 임베딩 삭제
+→ STM32 잠금 및 센서 스트림 종료
 → PATCH /rides/:rideId/end
 → kickboards.status = available
 ```
+
+얼굴 임베딩은 운행 종료 때 삭제하지 않습니다. 사용자별 재인증을 위해 Raspberry
+Pi에 유지하며, 계정 삭제 흐름에서 정리하는 데이터입니다.
 
 ---
 
@@ -634,7 +663,7 @@ docker compose up --build
 
 ---
 
-# 📝 현재 구현 상태
+# 📝 최종 구현 상태
 
 - [x] 회원가입
 - [x] 로그인
@@ -646,7 +675,9 @@ docker compose up --build
 - [x] 운행 종료
 - [x] 진행 중 운행 조회
 - [x] 전체·최근·상세 운행 조회
-- [ ] Raspberry Pi 세션 종료와 얼굴 임베딩 삭제 최종 연동
-- [ ] 오래된 얼굴 임베딩 자동 정리
-- [ ] 운행 종료 실패 재시도 처리
-- [ ] 운영 환경용 보안 설정 강화
+- [x] 앱에서 Raspberry Pi 안전 세션과 Node.js 운행 기록 순차 연동
+
+운영 배포 시에는 개발용 비밀번호와 JWT Secret 교체, Docker Compose의 동시 운행
+허용 override 제거, 계정 삭제 시 Raspberry Pi 임베딩 정리 API 연동을 별도로
+적용해야 합니다. 운행 종료 요청 재시도와 운영 비밀 관리도 배포 환경에서 선택적으로
+보강할 수 있습니다.
