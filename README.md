@@ -108,6 +108,8 @@ DB_PASSWORD=1234
 ALLOW_CONCURRENT_RIDES=false
 
 JWT_SECRET=safe-kick-dev-secret
+INTERNAL_API_KEY=replace-with-a-long-random-value
+FACE_EMBEDDING_ENCRYPTION_KEY=replace-with-32-byte-base64-key
 ```
 
 주의사항:
@@ -121,6 +123,24 @@ JWT_SECRET=safe-kick-dev-secret
 - 현재 `docker-compose.yml`은 통합 테스트를 위해
   `ALLOW_CONCURRENT_RIDES=true`를 강제로 덮어씁니다. 운영 또는 최종 시연 환경에서는
   이 override를 제거하거나 `false`로 바꿔야 정상적인 중복 운행 방지가 적용됩니다.
+- `FACE_EMBEDDING_ENCRYPTION_KEY`는 `openssl rand -base64 32`로 생성하고 DB와
+  분리된 비밀 저장소에 보관합니다.
+
+## 얼굴 임베딩 내부 API
+
+Raspberry Pi만 `X-Internal-Api-Key`로 접근하는 API입니다. 등록 시 전달된
+`float32` 임베딩은 Node 서버에서 AES-256-GCM으로 암호화해 PostgreSQL에
+저장합니다.
+
+```http
+PUT    /internal/face-embeddings/{user_id}
+GET    /internal/face-embeddings/{user_id}
+DELETE /internal/face-embeddings/{user_id}
+```
+
+조회 요청에는 `X-Device-Id`도 필요합니다. 해당 사용자에게 종료되지 않은 운행이
+있고 그 운행의 킥보드 `device_id`가 요청 장비와 일치할 때만 복호화된 값을
+반환합니다. 응답에는 `Cache-Control: no-store`가 적용됩니다.
 
 ---
 
@@ -676,8 +696,10 @@ docker compose up --build
 - [x] 진행 중 운행 조회
 - [x] 전체·최근·상세 운행 조회
 - [x] 앱에서 Raspberry Pi 안전 세션과 Node.js 운행 기록 순차 연동
+- [x] 암호화된 얼굴 임베딩 저장·조회·삭제 내부 API
+- [x] 활성 운행과 Raspberry Pi 장비 ID 기반 임베딩 조회 제한
 
 운영 배포 시에는 개발용 비밀번호와 JWT Secret 교체, Docker Compose의 동시 운행
-허용 override 제거, 계정 삭제 시 Raspberry Pi 임베딩 정리 API 연동을 별도로
-적용해야 합니다. 운행 종료 요청 재시도와 운영 비밀 관리도 배포 환경에서 선택적으로
+허용 override 제거, 계정 삭제 시 임베딩 정리 연동을 별도로 적용해야 합니다.
+운행 종료 요청 재시도, 오래된 임베딩 정리와 운영 비밀 관리도 배포 환경에서
 보강할 수 있습니다.

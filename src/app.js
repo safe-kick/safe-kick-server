@@ -8,6 +8,7 @@ const ridesRoutes = require("./routes/rides");
 const sessionRoutes = require("./routes/session");
 const kickboardRoutes = require("./routes/kickboard");
 const kickboardsRouter = require("./routes/kickboards");
+const internalFaceEmbeddingsRoutes = require("./routes/internalFaceEmbeddings");
 
 
 const app = express();
@@ -55,6 +56,7 @@ app.use("/users", usersRoutes);
 app.use("/rides", ridesRoutes);
 app.use("/session", sessionRoutes);
 app.use("/kickboards", kickboardsRouter,);
+app.use("/internal/face-embeddings", internalFaceEmbeddingsRoutes);
 
 app.use("/", kickboardRoutes);
 

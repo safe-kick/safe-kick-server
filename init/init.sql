@@ -20,6 +20,18 @@ CREATE TABLE IF NOT EXISTS licenses (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 얼굴 원본이 아닌 InsightFace 임베딩을 AES-256-GCM으로 암호화해 저장한다.
+CREATE TABLE IF NOT EXISTS face_embeddings (
+    user_id BIGINT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    encrypted_embedding BYTEA NOT NULL,
+    encryption_iv BYTEA NOT NULL,
+    auth_tag BYTEA NOT NULL,
+    model_name VARCHAR(100) NOT NULL,
+    dimension INTEGER NOT NULL CHECK (dimension > 0),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 
 -- ===========================
 -- kickboards
