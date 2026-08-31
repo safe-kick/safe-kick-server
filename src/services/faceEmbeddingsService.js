@@ -73,15 +73,17 @@ exports.upsert = async ({ userId, embedding, modelName }) => {
   return result.rows[0];
 };
 
-exports.getForActiveRide = async ({ userId, deviceId }) => {
+exports.getForDevice = async ({ userId, deviceId }) => {
   const result = await pool.query(
     `SELECT fe.user_id, fe.encrypted_embedding, fe.encryption_iv, fe.auth_tag,
             fe.model_name, fe.dimension
      FROM face_embeddings fe
-     JOIN rides r ON r.user_id = fe.user_id AND r.ended_at IS NULL
-     JOIN kickboards k ON k.public_id = r.kickboard_id
-     WHERE fe.user_id = $1 AND k.device_id = $2
-     ORDER BY r.started_at DESC
+     WHERE fe.user_id = $1
+       AND EXISTS (
+         SELECT 1
+         FROM kickboards k
+         WHERE k.device_id = $2
+       )
      LIMIT 1`,
     [userId, deviceId],
   );

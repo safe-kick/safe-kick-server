@@ -138,9 +138,10 @@ GET    /internal/face-embeddings/{user_id}
 DELETE /internal/face-embeddings/{user_id}
 ```
 
-조회 요청에는 `X-Device-Id`도 필요합니다. 해당 사용자에게 종료되지 않은 운행이
-있고 그 운행의 킥보드 `device_id`가 요청 장비와 일치할 때만 복호화된 값을
-반환합니다. 응답에는 `Cache-Control: no-store`가 적용됩니다.
+조회 요청에는 `X-Device-Id`도 필요합니다. 요청 장비의 `device_id`가 등록된
+킥보드와 일치하고 해당 사용자의 임베딩이 있을 때 복호화된 값을 반환합니다.
+이로써 운행 생성 전 안전 인증 단계에서도 얼굴을 검증할 수 있습니다. 응답에는
+`Cache-Control: no-store`가 적용됩니다.
 
 ---
 

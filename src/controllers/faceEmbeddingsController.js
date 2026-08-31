@@ -35,9 +35,9 @@ exports.getForVerification = async (req, res) => {
     if (!userId || !deviceId) {
       return res.status(400).json({ status: "error", data: null, message: "userId와 X-Device-Id가 필요합니다." });
     }
-    const data = await faceEmbeddingsService.getForActiveRide({ userId, deviceId });
+    const data = await faceEmbeddingsService.getForDevice({ userId, deviceId });
     if (!data) {
-      return res.status(404).json({ status: "error", data: null, message: "이 장비에서 인증 가능한 활성 운행 또는 임베딩이 없습니다." });
+      return res.status(404).json({ status: "error", data: null, message: "등록된 장비 또는 사용자 얼굴 임베딩이 없습니다." });
     }
     res.set("Cache-Control", "no-store");
     return res.status(200).json({ status: "success", data, message: "얼굴 임베딩을 조회했습니다." });
